@@ -1,36 +1,87 @@
 const express = require("express");
 const cors = require("cors");
+const fs = require("fs");
+const http = require("http");
+const path = require("path");
 const cookieParser = require("cookie-parser");
-const connect_db = require("./config/database");
+const connectDb = require("./config/database");
 const authRouter = require("./routes/authRoutes");
 const profileRouter = require("./routes/profileRoutes");
 const requestRouter = require("./routes/requestRoutes");
 const userRouter = require("./routes/userRoutes");
-const path = require("path");
+const chatRouter = require("./routes/chatRoutes");
+const initializeSocket = require("./utils/socket");
+const {
+  allowedOrigins,
+  frontendDistPath,
+  shouldServeFrontend,
+} = require("./config/env");
 require("dotenv").config();
 
-const _dirname = path.resolve();
-
 const app = express();
+const server = http.createServer(app);
 const port = process.env.PORT || 3000;
+
+initializeSocket(server);
+app.set("trust proxy", 1);
+
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("Origin not allowed by CORS"));
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 };
+
 app.use(cors(corsOptions));
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
+
+app.get("/health", (_req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Server is healthy",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+});
 
 app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
-app.use(express.static(path.join(_dirname, "/frontend/dist")));
-app.get("*", (req,res) => {
-  res.sendFile(path.join(_dirname, "/frontend/dist/index.html"));
-})
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-  connect_db();
-})
+app.use("/", chatRouter);
+
+const serveFrontend = shouldServeFrontend() && fs.existsSync(frontendDistPath);
+
+if (serveFrontend) {
+  app.use(express.static(frontendDistPath));
+  app.get(/.*/, (_req, res) => {
+    res.sendFile(path.join(frontendDistPath, "index.html"));
+  });
+} else {
+  app.all(/.*/, (req, res) => {
+    res.status(404).json({
+      success: false,
+      message: `Route not found: ${req.method} ${req.originalUrl}`,
+    });
+  });
+}
+
+async function startServer() {
+  try {
+    await connectDb();
+    server.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error.message || error);
+    process.exit(1);
+  }
+}
+
+startServer();

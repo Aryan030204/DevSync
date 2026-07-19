@@ -3,7 +3,10 @@ import { useState } from "react";
 import { BASE_URL } from "../utils/constants";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/ReactToastify.css";
+import "react-toastify/dist/ReactToastify.css";
+
+const DEFAULT_PHOTO_URL =
+  "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
 
 const Signup = () => {
   const [firstName, setFirstName] = useState("");
@@ -30,6 +33,7 @@ const Signup = () => {
           age,
           skills,
           about,
+          photoUrl,
         },
         { withCredentials: true }
       );
@@ -37,7 +41,7 @@ const Signup = () => {
       toast.success("Account created successfully ! redirecting you to login page");
 
       setTimeout(() => {
-        return navigate("/");
+        return navigate("/login");
       }, 2000);
     } catch (err) {
       toast.error("Something went wrong !");
@@ -52,7 +56,7 @@ const Signup = () => {
               Create an Account
             </h2>
             <img
-              src={photoUrl || "default_image_url"}
+              src={photoUrl || DEFAULT_PHOTO_URL}
               className=" rounded-full w-40 h-40 self-center p-4"
               alt="Display"
             />
@@ -65,7 +69,7 @@ const Signup = () => {
             />
             <h1>Password</h1>
             <input
-              type="text"
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="input input-primary w-full max-w-xs mb-4"

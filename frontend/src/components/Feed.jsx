@@ -26,12 +26,15 @@ const Feed = () => {
   useEffect(() => {
     getfeed();
   }, []);
+
+  if (!feedData) {
+    return <div className="mt-10 text-center">Loading feed...</div>;
+  }
+
   return (
-    feedData && (
-      <div className="flex justify-center items-center mt-10 shadow-md">
-        <FeedCard data={feedData} />
-      </div>
-    )
+    <div className="flex justify-center items-center mt-10 shadow-md">
+      <FeedCard data={feedData} />
+    </div>
   );
 };
 

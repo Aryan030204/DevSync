@@ -2,6 +2,7 @@ import { useSelector } from "react-redux";
 
 const Profile = () => {
   const user = useSelector((store) => store.user);
+  const skills = Array.isArray(user?.skills) ? user.skills.join(", ") : user?.skills;
 
   if (!user || !user.firstName || !user.lastName) {
     return (
@@ -44,12 +45,12 @@ const Profile = () => {
               </div>
               <div className="flex justify-between my-2">
               <h1 className="font-bold">About:</h1>
-              <textarea value={user.about} className="overflow-hidden bg-transparent text-end resize-none">{user.about}</textarea>
+              <textarea readOnly value={user.about} className="overflow-hidden bg-transparent text-end resize-none">{user.about}</textarea>
               </div>
               <div className="flex justify-between">
               <h1 className="font-bold">Skills:</h1>
               <h1>
-                {user.skills}
+                {skills}
               </h1>
               </div>
             </div>

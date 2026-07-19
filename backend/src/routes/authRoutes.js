@@ -2,13 +2,25 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const User = require("../models/User");
+const { normalizeUserPayload, validate } = require("../utils/validation");
+const { isProduction } = require("../config/env");
 const authRouter = express.Router();
+
+function getCookieOptions() {
+  return {
+    httpOnly: true,
+    sameSite: isProduction ? "None" : "Lax",
+    secure: isProduction,
+  };
+}
 
 authRouter.post("/signup", async (req, res) => {
   try {
-    const { emailId, password } = req.body;
+    const normalizedPayload = normalizeUserPayload(req.body);
+    const { emailId, password } = normalizedPayload;
 
-    User.validate(req.body);
+    validate(normalizedPayload);
+    await User.validate(normalizedPayload);
 
     const existingUser = await User.findOne({ emailId });
     if (existingUser) {
@@ -17,7 +29,7 @@ authRouter.post("/signup", async (req, res) => {
 
     const passHash = await bcrypt.hash(password, 10);
     const newUser = new User({
-      ...req.body,
+      ...normalizedPayload,
       password: passHash,
       _id: new mongoose.Types.ObjectId(),
     });
@@ -50,11 +62,7 @@ authRouter.post("/login", async (req, res) => {
 
     const token = await user.getJwt();
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      sameSite: "None",
-      secure: true,
-    });
+    res.cookie("token", token, getCookieOptions());
 
     res.status(200).json({
       success: true,
@@ -75,9 +83,7 @@ authRouter.post("/logout", (req, res) => {
   try {
     res.cookie("token", "", {
       expires: new Date(0),
-      httpOnly: true,
-      sameSite: "None",
-      secure: true,
+      ...getCookieOptions(),
     });
 
     res.status(200).json({

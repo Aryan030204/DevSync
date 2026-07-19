@@ -1,0 +1,2 @@
+- enables Low latency, Bidirectional and event based connection between client and server
+- 

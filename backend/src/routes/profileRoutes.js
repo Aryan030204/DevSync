@@ -2,7 +2,10 @@ const express = require("express");
 const profileRouter = express.Router();
 const authMiddleware = require("../middlewares/auth");
 const User = require("../models/User");
-const { validateProfileData } = require("../utils/validation");
+const {
+  normalizeUserPayload,
+  validateProfileData,
+} = require("../utils/validation");
 
 profileRouter.get("/profile", authMiddleware, (req, res) => {
   try {
@@ -23,21 +26,23 @@ profileRouter.get("/profile", authMiddleware, (req, res) => {
 
 profileRouter.patch("/profile/edit", authMiddleware, async (req, res) => {
   try {
-    if (!validateProfileData(req)) {
+    if (!validateProfileData(req.body)) {
       return res.status(400).json({
         success: false,
         message: "Invalid data",
       });
-    };
-    const user = req.user;
-    await user.updateOne({
-        ...req.body
+    }
+
+    const updates = normalizeUserPayload(req.body);
+    const updatedUser = await User.findByIdAndUpdate(req.user._id, updates, {
+      new: true,
+      runValidators: true,
     });
-    await user.save();
+
     res.status(200).json({
-        success: true,
-        message: "profile updated successfully",
-        user
+      success: true,
+      message: "profile updated successfully",
+      user: updatedUser,
     });
   } catch (err) {
     console.log(err);

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { BASE_URL } from "../utils/constants";
+import { Link } from "react-router-dom";
 
 const Connections = () => {
   const [connections, setConnections] = useState([]);
@@ -20,7 +21,7 @@ const Connections = () => {
 
   useEffect(() => {
     fetchConnections();
-  }, [connections]);
+  }, []);
 
   if (loading) {
     return <h1 className="text-center m-5 text-2xl">Loading...</h1>;
@@ -39,7 +40,7 @@ const Connections = () => {
       </div>
       <div className="flex items-center m-5 p-5 gap-2 flex-wrap">
         {connections.map((c) => {
-          console.log(c);
+          // console.log(c);
 
           return (
             <div
@@ -62,6 +63,7 @@ const Connections = () => {
                   {c.about}
                 </textarea>
                 <p>Skills: {c.skills.join(", ")}</p>
+                <Link to={"/chat/"+c._id}><button className="bg-blue-800 font-mono font-bold p-2 text-lg text-white w-[5rem] mt-2  rounded-lg hover:bg-blue-900">Chat</button></Link>
               </div>
             </div>
           );

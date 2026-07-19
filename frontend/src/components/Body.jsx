@@ -1,7 +1,7 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { BASE_URL } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,20 +11,23 @@ const Body = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const userData = useSelector((store) => store.user);
-
+  const [isLoading, setIsLoading] = useState(!userData);
+  
   useEffect(() => {
     fetchUser();
-  }, []);
-
+  }, [userData]);
+  
   const fetchUser = async () => {
-    if (userData) return;
+    if (userData) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      setIsLoading(true);
       const user = await axios.get(BASE_URL + "/profile", {
         withCredentials: true,
       });
-      if(!user){
-        navigate("/login");
-      }
 
       dispatch(addUser(user.data.user));
     } catch (err) {
@@ -32,6 +35,8 @@ const Body = () => {
         navigate("/login");
       }
       console.log(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -41,7 +46,7 @@ const Body = () => {
       <Navbar />
       </div>
       <div className="flex-grow">
-        <Outlet />
+        {isLoading ? <div className="p-6 text-center">Loading...</div> : <Outlet />}
       </div>
       <Footer />
     </div>

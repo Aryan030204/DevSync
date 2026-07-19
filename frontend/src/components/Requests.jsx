@@ -1,20 +1,18 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { BASE_URL } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
-import { addRequests } from "../utils/requestSlice";
+import { addRequests, removeRequest } from "../utils/requestSlice";
 
 const Requests = () => {
   const dispatch = useDispatch();
   const requests = useSelector((store) => store.requests);
-  const [reqs, setReqs] = useState(requests);
   const fetchRequests = async () => {
     try {
       const res = await axios.get(BASE_URL + "/user/requests", {
         withCredentials: true,
       });
       dispatch(addRequests(res.data.data));
-      setReqs(res.data.data);
     } catch (err) {
       console.log(err);
     }
@@ -31,7 +29,7 @@ const Requests = () => {
         {},
         { withCredentials: true }
       );
-      setReqs((prevReqs) => prevReqs.filter((req) => req._id !== id));
+      dispatch(removeRequest(id));
     } catch (err) {
       console.log(err);
     }
@@ -44,13 +42,13 @@ const Requests = () => {
         {},
         { withCredentials: true }
       );
-      setReqs((prevReqs) => prevReqs.filter((req) => req._id !== id));
+      dispatch(removeRequest(id));
     } catch (err) {
       console.log(err);
     }
   };
 
-  if (reqs.length === 0) {
+  if (requests.length === 0) {
     return <h1 className="text-center m-5 text-2xl">No requests yet...</h1>;
   }
 
@@ -58,7 +56,7 @@ const Requests = () => {
     <div className="flex flex-col">
       <h1 className="text-3xl font-bold m-5 self-center">Requests</h1>
       <div className="flex justify-start flex-wrap">
-        {reqs.map((r) => (
+        {requests.map((r) => (
           <div className="flex flex-wrap m-5" key={r._id}>
             <div className="card bg-base-300 w-72 max-h-96 shadow-xl">
               <img

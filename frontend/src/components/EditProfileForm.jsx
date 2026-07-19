@@ -5,7 +5,10 @@ import { BASE_URL } from "../utils/constants";
 import { addUser } from "../utils/userSlice";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/ReactToastify.css";
+import "react-toastify/dist/ReactToastify.css";
+
+const DEFAULT_PHOTO_URL =
+  "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
 
 const EditProfileForm = () => {
   const user = useSelector((store) => store.user);
@@ -15,7 +18,9 @@ const EditProfileForm = () => {
   const [age, setAge] = useState(user?.age || "");
   const [gender, setGender] = useState(user?.gender || "");
   const [about, setAbout] = useState(user?.about || "");
-  const [skills, setSkills] = useState(user?.skills || "");
+  const [skills, setSkills] = useState(
+    Array.isArray(user?.skills) ? user.skills.join(", ") : user?.skills || ""
+  );
   const [photoUrl, setPhotoUrl] = useState(user?.photoUrl || "");
   const navigate = useNavigate();
 
@@ -26,7 +31,7 @@ const EditProfileForm = () => {
       setAge(user.age || "");
       setGender(user.gender || "");
       setAbout(user.about || "");
-      setSkills(user.skills || "");
+      setSkills(Array.isArray(user.skills) ? user.skills.join(", ") : user.skills || "");
       setPhotoUrl(user.photoUrl || "");
     }
   }, [user]);
@@ -54,15 +59,15 @@ const EditProfileForm = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-base-100 p-4">
-      <div className="w-full max-w-3xl">
+    <div className="flex justify-center items-center min-h-screen bg-base-100 p-10">
+      <div className=" max-w-3xl">
         <div className="card bg-base-300 shadow-xl p-6 md:p-10">
           <ToastContainer />
           <h2 className="card-title text-4xl mb-8 text-center">Edit Profile</h2>
 
-          <div className="flex flex-col items-center mb-6">
+          <div className="flex flex-col items-center mb-8">
             <img
-              src={photoUrl || "default_image_url"}
+              src={photoUrl || DEFAULT_PHOTO_URL}
               className="rounded-full w-32 h-32 object-cover mb-4"
               alt="Display"
             />
@@ -114,9 +119,9 @@ const EditProfileForm = () => {
                 className="select select-primary w-full"
               >
                 <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="others">Other</option>
               </select>
             </div>
           </div>

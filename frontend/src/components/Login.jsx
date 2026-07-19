@@ -5,12 +5,13 @@ import { addUser } from "../utils/userSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/ReactToastify.css";
+import "react-toastify/dist/ReactToastify.css";
 import eye from "../assets/eye.png";
 
 const Login = () => {
   let [emailId, setEmailId] = useState("");
   let [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -50,24 +51,18 @@ const Login = () => {
           />
           <h1>Password</h1>
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="enter your password"
-            className="input password input-bordered input-primary w-full max-w-xs"
+            className="input input-bordered input-primary w-full max-w-xs"
           />
           <img
             src={eye}
             className="w-5 absolute top-[17.5rem] left-[20rem] cursor-pointer"
-            onMouseDown={() => {
-              document.querySelector(".password").type = "text";
-            }}
-            onMouseUp={() => {
-              document.querySelector(".password").type = "password";
-            }}
-            onMouseLeave={() => {
-              document.querySelector(".password").type = "password";
-            }}
+            onMouseDown={() => setShowPassword(true)}
+            onMouseUp={() => setShowPassword(false)}
+            onMouseLeave={() => setShowPassword(false)}
           />
           <div className="card-actions flex justify-between items-center">
             <h1 className="text-[13px]">

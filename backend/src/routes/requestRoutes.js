@@ -43,7 +43,7 @@ requestRouter.post(
       const connectionRequest = new ConnectionReq({
         fromUserId,
         toUserId,
-        status: "pending",
+        status: status === "interested" ? "pending" : "ignored",
       });
 
       const data = await connectionRequest.save();
