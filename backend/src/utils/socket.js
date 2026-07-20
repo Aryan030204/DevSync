@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const Chat = require("../models/Chat");
 const ConnectionReq = require("../models/ConnectionRequests");
 const User = require("../models/User");
-const { allowedOrigins } = require("../config/env");
+const { allowedOrigins, isAllowedOrigin } = require("../config/env");
 
 function getRoomId(userId, targetId) {
   return [userId.toString(), targetId.toString()].sort().join("_");
@@ -35,7 +35,19 @@ async function canUsersChat(userId, targetId) {
 const initializeSocket = (server) => {
   const io = socket(server, {
     cors: {
-      origin: allowedOrigins,
+      origin(origin, callback) {
+        if (isAllowedOrigin(origin)) {
+          return callback(null, true);
+        }
+
+        console.error(
+          "Blocked Socket.IO origin:",
+          origin,
+          "Allowed origins:",
+          allowedOrigins
+        );
+        return callback(new Error("Origin not allowed by Socket.IO CORS"));
+      },
       credentials: true,
     },
   });

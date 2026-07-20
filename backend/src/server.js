@@ -14,6 +14,7 @@ const initializeSocket = require("./utils/socket");
 const {
   allowedOrigins,
   frontendDistPath,
+  isAllowedOrigin,
   shouldServeFrontend,
 } = require("./config/env");
 require("dotenv").config();
@@ -27,10 +28,11 @@ app.set("trust proxy", 1);
 
 const corsOptions = {
   origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
 
+    console.error("Blocked CORS origin:", origin, "Allowed origins:", allowedOrigins);
     return callback(new Error("Origin not allowed by CORS"));
   },
   credentials: true,
